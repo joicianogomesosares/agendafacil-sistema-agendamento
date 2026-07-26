@@ -1,0 +1,596 @@
+/*
+ * app.js — Interface e interação do AgendaFácil
+ * Controla a navegação, o assistente de agendamento e o painel administrativo.
+ * Depende de data.js e store.js (carregados antes deste arquivo).
+ */
+
+/* Atalho para document.querySelector / getElementById */
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+const el = (id) => document.getElementById(id);
+
+/* Estado do agendamento em construção */
+let reserva = {
+  servicoId: null,
+  profissionalId: null,
+  data: null,
+  hora: null,
+  clienteNome: "",
+  clienteTelefone: "",
+};
+let passoAtual = 1;
+
+/* Estado do painel administrativo */
+let adminPeriodo = "dia";        // "dia" | "semana"
+let adminBusca = "";
+let semanaCalendario = inicioDaSemana(new Date()); // segunda-feira exibida no calendário
+
+/* ============================================================
+ * Inicialização
+ * ============================================================ */
+document.addEventListener("DOMContentLoaded", () => {
+  aplicarTemaSalvo();
+  semearDadosSeNecessario();
+  configurarNavegacao();
+  configurarTema();
+  configurarAssistente();
+  configurarAdmin();
+  renderServicos();
+  irParaPasso(1);
+  mostrarView("agendar");
+});
+
+/* ============================================================
+ * Tema claro/escuro
+ * ============================================================ */
+function aplicarTemaSalvo() {
+  const salvo = localStorage.getItem(STORAGE_TEMA);
+  if (salvo === "claro" || salvo === "escuro") {
+    document.documentElement.setAttribute("data-tema", salvo);
+  }
+  atualizarIconeTema();
+}
+
+function configurarTema() {
+  el("btn-tema").addEventListener("click", () => {
+    const atual = document.documentElement.getAttribute("data-tema");
+    // Descobre o tema efetivo considerando a preferência do sistema.
+    const prefereEscuro = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const efetivo = atual || (prefereEscuro ? "escuro" : "claro");
+    const novo = efetivo === "escuro" ? "claro" : "escuro";
+    document.documentElement.setAttribute("data-tema", novo);
+    localStorage.setItem(STORAGE_TEMA, novo);
+    atualizarIconeTema();
+  });
+}
+
+function atualizarIconeTema() {
+  const atual = document.documentElement.getAttribute("data-tema");
+  const prefereEscuro = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const efetivo = atual || (prefereEscuro ? "escuro" : "claro");
+  el("btn-tema").textContent = efetivo === "escuro" ? "☀️" : "🌙";
+  el("btn-tema").setAttribute("aria-label", efetivo === "escuro" ? "Ativar tema claro" : "Ativar tema escuro");
+}
+
+/* ============================================================
+ * Navegação entre as views (Agendar / Administração)
+ * ============================================================ */
+function configurarNavegacao() {
+  $$(".nav-tab").forEach((btn) => {
+    btn.addEventListener("click", () => mostrarView(btn.dataset.view));
+  });
+}
+
+function mostrarView(view) {
+  $$(".nav-tab").forEach((btn) => {
+    const ativo = btn.dataset.view === view;
+    btn.classList.toggle("ativo", ativo);
+    btn.setAttribute("aria-selected", ativo ? "true" : "false");
+  });
+  el("view-agendar").hidden = view !== "agendar";
+  el("view-admin").hidden = view !== "admin";
+  if (view === "admin") renderAdmin();
+}
+
+/* ============================================================
+ * Assistente de agendamento (cliente)
+ * ============================================================ */
+function configurarAssistente() {
+  // Botões "voltar" de cada passo
+  $$("[data-voltar]").forEach((btn) => {
+    btn.addEventListener("click", () => irParaPasso(Number(btn.dataset.voltar)));
+  });
+
+  // Seletor de data
+  el("seletor-data").addEventListener("change", (e) => {
+    if (e.target.value) selecionarData(e.target.value);
+  });
+
+  // Formulário do cliente
+  el("form-cliente").addEventListener("submit", (e) => {
+    e.preventDefault();
+    confirmarAgendamento();
+  });
+
+  // Botão "novo agendamento" na tela de sucesso
+  el("btn-novo").addEventListener("click", () => {
+    reiniciarReserva();
+  });
+}
+
+/* Move o assistente para o passo indicado e atualiza a barra de progresso. */
+function irParaPasso(n) {
+  passoAtual = n;
+  ["passo-1", "passo-2", "passo-3", "passo-4", "passo-sucesso"].forEach((id) => {
+    el(id).hidden = true;
+  });
+  if (n === 99) {
+    el("passo-sucesso").hidden = false;
+  } else {
+    el("passo-" + n).hidden = false;
+  }
+  atualizarStepper(n);
+  // Rola suavemente ao topo do cartão do assistente.
+  const topo = el("assistente");
+  if (topo) topo.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+/* Atualiza os indicadores visuais de progresso (1..4). */
+function atualizarStepper(n) {
+  const passo = n === 99 ? 5 : n;
+  $$("#stepper .step").forEach((s) => {
+    const num = Number(s.dataset.step);
+    s.classList.toggle("concluido", num < passo);
+    s.classList.toggle("atual", num === passo);
+  });
+}
+
+/* ----- Passo 1: escolher serviço ----- */
+function renderServicos() {
+  const cont = el("grade-servicos");
+  cont.innerHTML = "";
+  SERVICOS.forEach((s) => {
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "card-servico" + (reserva.servicoId === s.id ? " selecionado" : "");
+    card.setAttribute("aria-pressed", reserva.servicoId === s.id ? "true" : "false");
+    card.innerHTML = `
+      <span class="card-servico__icone" aria-hidden="true">${s.icone}</span>
+      <span class="card-servico__info">
+        <span class="card-servico__nome">${s.nome}</span>
+        <span class="card-servico__desc">${s.desc}</span>
+        <span class="card-servico__meta">
+          <span class="tag">⏱ ${s.duracao} min</span>
+          <span class="preco">${formatarPreco(s.preco)}</span>
+        </span>
+      </span>`;
+    card.addEventListener("click", () => selecionarServico(s.id));
+    cont.appendChild(card);
+  });
+}
+
+function selecionarServico(id) {
+  reserva.servicoId = id;
+  // Se o profissional atual não atende esse serviço, limpa a seleção.
+  if (reserva.profissionalId) {
+    const prof = PROFISSIONAIS.find((p) => p.id === reserva.profissionalId);
+    if (!prof || !prof.servicos.includes(id)) reserva.profissionalId = null;
+  }
+  renderServicos();
+  renderProfissionais();
+  irParaPasso(2);
+}
+
+/* ----- Passo 2: escolher profissional ----- */
+function renderProfissionais() {
+  const servico = SERVICOS.find((s) => s.id === reserva.servicoId);
+  el("resumo-servico-topo").innerHTML = servico
+    ? `<span class="mini-icone">${servico.icone}</span> <strong>${servico.nome}</strong>
+       <span class="mini-sep">•</span> ${servico.duracao} min
+       <span class="mini-sep">•</span> ${formatarPreco(servico.preco)}`
+    : "";
+
+  const cont = el("grade-profissionais");
+  cont.innerHTML = "";
+  const disponiveis = profissionaisDoServico(reserva.servicoId);
+  disponiveis.forEach((p) => {
+    const iniciais = p.nome.split(" ").slice(0, 2).map((n) => n[0]).join("");
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "card-prof" + (reserva.profissionalId === p.id ? " selecionado" : "");
+    card.setAttribute("aria-pressed", reserva.profissionalId === p.id ? "true" : "false");
+    card.innerHTML = `
+      <span class="avatar" style="--cor:${p.cor}" aria-hidden="true">${iniciais}</span>
+      <span class="card-prof__info">
+        <span class="card-prof__nome">${p.nome}</span>
+        <span class="card-prof__cargo">${p.cargo}</span>
+      </span>`;
+    card.addEventListener("click", () => selecionarProfissional(p.id));
+    cont.appendChild(card);
+  });
+}
+
+function selecionarProfissional(id) {
+  reserva.profissionalId = id;
+  renderProfissionais();
+  // Define uma data inicial: hoje (ou o próximo dia aberto).
+  const inputData = el("seletor-data");
+  inputData.min = hojeIso();
+  if (!reserva.data || dataDoIso(reserva.data) < dataDoIso(hojeIso())) {
+    reserva.data = proximoDiaAberto(hojeIso());
+  }
+  inputData.value = reserva.data;
+  renderPasso3();
+  irParaPasso(3);
+}
+
+/* Retorna o próximo dia (a partir do ISO informado) em que há atendimento. */
+function proximoDiaAberto(iso) {
+  let d = dataDoIso(iso);
+  for (let i = 0; i < 14; i++) {
+    if (!diaFechado(isoDaData(d))) return isoDaData(d);
+    d.setDate(d.getDate() + 1);
+  }
+  return iso;
+}
+
+/* ----- Passo 3: escolher data e horário ----- */
+function renderPasso3() {
+  renderDiasRapidos();
+  renderHorarios();
+}
+
+/* Chips de acesso rápido para os próximos dias abertos. */
+function renderDiasRapidos() {
+  const cont = el("dias-rapidos");
+  cont.innerHTML = "";
+  const base = dataDoIso(hojeIso());
+  let adicionados = 0;
+  for (let i = 0; i < 21 && adicionados < 7; i++) {
+    const d = new Date(base);
+    d.setDate(d.getDate() + i);
+    const iso = isoDaData(d);
+    if (diaFechado(iso)) continue;
+    adicionados++;
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "chip-dia" + (reserva.data === iso ? " selecionado" : "");
+    chip.innerHTML = `
+      <span class="chip-dia__semana">${i === 0 ? "Hoje" : DIAS_SEMANA_CURTO[d.getDay()]}</span>
+      <span class="chip-dia__num">${d.getDate()}</span>
+      <span class="chip-dia__mes">${MESES[d.getMonth()].slice(0, 3)}</span>`;
+    chip.addEventListener("click", () => selecionarData(iso));
+    cont.appendChild(chip);
+  }
+}
+
+function selecionarData(iso) {
+  reserva.data = iso;
+  reserva.hora = null;
+  el("seletor-data").value = iso;
+  renderDiasRapidos();
+  renderHorarios();
+}
+
+/* Renderiza a grade de horários disponíveis para a data/profissional. */
+function renderHorarios() {
+  const cont = el("grade-horarios");
+  const info = el("info-funcionamento");
+  cont.innerHTML = "";
+
+  const servico = SERVICOS.find((s) => s.id === reserva.servicoId);
+  if (!reserva.data || !servico) return;
+
+  if (diaFechado(reserva.data)) {
+    info.textContent = "Estabelecimento fechado nesta data. Escolha outro dia.";
+    cont.innerHTML = `<p class="aviso-vazio">😴 Sem atendimento neste dia.</p>`;
+    return;
+  }
+
+  const grade = gradeHorarios(reserva.profissionalId, reserva.data, servico.duracao);
+  const disponiveis = grade.filter((g) => g.disponivel).length;
+  info.innerHTML = `📅 <strong>${formatarDataExtenso(reserva.data)}</strong> —
+    ${disponiveis} horário${disponiveis === 1 ? "" : "s"} disponíve${disponiveis === 1 ? "l" : "is"}`;
+
+  if (disponiveis === 0) {
+    cont.innerHTML = `<p class="aviso-vazio">😕 Nenhum horário livre nesta data. Tente outro dia.</p>`;
+    return;
+  }
+
+  grade.forEach((slot) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "slot" + (reserva.hora === slot.hora ? " selecionado" : "");
+    btn.disabled = !slot.disponivel;
+    if (!slot.disponivel) btn.classList.add("indisponivel");
+    btn.textContent = slot.hora;
+    if (!slot.disponivel && slot.motivo === "ocupado") btn.title = "Horário já reservado";
+    btn.addEventListener("click", () => selecionarHora(slot.hora));
+    cont.appendChild(btn);
+  });
+}
+
+function selecionarHora(hora) {
+  reserva.hora = hora;
+  renderHorarios();
+  renderPasso4();
+  irParaPasso(4);
+}
+
+/* ----- Passo 4: confirmação ----- */
+function renderPasso4() {
+  const servico = SERVICOS.find((s) => s.id === reserva.servicoId);
+  const prof = PROFISSIONAIS.find((p) => p.id === reserva.profissionalId);
+  const fim = minutosParaHora(horaParaMinutos(reserva.hora) + servico.duracao);
+
+  el("resumo-agendamento").innerHTML = `
+    <h3 class="resumo__titulo">Resumo do agendamento</h3>
+    <dl class="resumo__lista">
+      <div><dt>Serviço</dt><dd>${servico.icone} ${servico.nome}</dd></div>
+      <div><dt>Profissional</dt><dd>${prof.nome}</dd></div>
+      <div><dt>Data</dt><dd>${formatarDataExtenso(reserva.data)}</dd></div>
+      <div><dt>Horário</dt><dd>${reserva.hora} às ${fim} (${servico.duracao} min)</dd></div>
+      <div class="resumo__total"><dt>Valor</dt><dd>${formatarPreco(servico.preco)}</dd></div>
+    </dl>`;
+
+  // Preenche o formulário com dados já digitados (caso o usuário volte).
+  el("cliente-nome").value = reserva.clienteNome;
+  el("cliente-telefone").value = reserva.clienteTelefone;
+}
+
+function confirmarAgendamento() {
+  const nome = el("cliente-nome").value.trim();
+  const telefone = el("cliente-telefone").value.trim();
+  if (nome.length < 2) {
+    el("cliente-nome").focus();
+    mostrarToast("Informe o nome do cliente.", "erro");
+    return;
+  }
+  reserva.clienteNome = nome;
+  reserva.clienteTelefone = telefone;
+
+  const servico = SERVICOS.find((s) => s.id === reserva.servicoId);
+  const prof = PROFISSIONAIS.find((p) => p.id === reserva.profissionalId);
+
+  // Revalida o conflito no momento da confirmação (segurança extra).
+  if (temConflito(reserva.profissionalId, reserva.data, reserva.hora, servico.duracao)) {
+    mostrarToast("Ops! Esse horário acabou de ser ocupado. Escolha outro.", "erro");
+    renderHorarios();
+    irParaPasso(3);
+    return;
+  }
+
+  const ag = {
+    id: novoId(),
+    servicoId: servico.id,
+    servicoNome: servico.nome,
+    duracao: servico.duracao,
+    preco: servico.preco,
+    profissionalId: prof.id,
+    profissionalNome: prof.nome,
+    data: reserva.data,
+    hora: reserva.hora,
+    clienteNome: nome,
+    clienteTelefone: telefone,
+    criadoEm: new Date().toISOString(),
+  };
+  adicionarAgendamento(ag);
+  renderSucesso(ag);
+  irParaPasso(99);
+  mostrarToast("Agendamento confirmado! ✅", "ok");
+}
+
+function renderSucesso(ag) {
+  const servico = SERVICOS.find((s) => s.id === ag.servicoId);
+  const fim = minutosParaHora(horaParaMinutos(ag.hora) + ag.duracao);
+  el("detalhes-sucesso").innerHTML = `
+    <dl class="resumo__lista">
+      <div><dt>Cliente</dt><dd>${ag.clienteNome}</dd></div>
+      <div><dt>Serviço</dt><dd>${servico.icone} ${ag.servicoNome}</dd></div>
+      <div><dt>Profissional</dt><dd>${ag.profissionalNome}</dd></div>
+      <div><dt>Data</dt><dd>${formatarDataExtenso(ag.data)}</dd></div>
+      <div><dt>Horário</dt><dd>${ag.hora} às ${fim}</dd></div>
+      <div class="resumo__total"><dt>Valor</dt><dd>${formatarPreco(ag.preco)}</dd></div>
+    </dl>`;
+}
+
+/* Reinicia o assistente para um novo agendamento (mantém o cliente vazio). */
+function reiniciarReserva() {
+  reserva = { servicoId: null, profissionalId: null, data: null, hora: null, clienteNome: "", clienteTelefone: "" };
+  el("form-cliente").reset();
+  renderServicos();
+  irParaPasso(1);
+}
+
+/* ============================================================
+ * Painel administrativo
+ * ============================================================ */
+function configurarAdmin() {
+  $$("#filtro-periodo button").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      adminPeriodo = btn.dataset.periodo;
+      $$("#filtro-periodo button").forEach((b) => b.classList.toggle("ativo", b === btn));
+      renderAdmin();
+    });
+  });
+
+  el("busca-cliente").addEventListener("input", (e) => {
+    adminBusca = e.target.value.trim().toLowerCase();
+    renderListaAgendamentos();
+  });
+
+  el("cal-prev").addEventListener("click", () => moverSemana(-7));
+  el("cal-next").addEventListener("click", () => moverSemana(7));
+  el("cal-hoje").addEventListener("click", () => {
+    semanaCalendario = inicioDaSemana(new Date());
+    renderCalendario();
+  });
+}
+
+function moverSemana(dias) {
+  semanaCalendario.setDate(semanaCalendario.getDate() + dias);
+  renderCalendario();
+}
+
+function renderAdmin() {
+  renderEstatisticas();
+  renderListaAgendamentos();
+  renderCalendario();
+}
+
+/* Retorna os agendamentos do período ativo (dia atual ou semana atual). */
+function agendamentosDoPeriodo() {
+  const lista = carregarAgendamentos();
+  if (adminPeriodo === "dia") {
+    const hoje = hojeIso();
+    return lista.filter((a) => a.data === hoje);
+  }
+  // semana atual (segunda a domingo contendo hoje)
+  const ini = inicioDaSemana(new Date());
+  const fim = new Date(ini);
+  fim.setDate(fim.getDate() + 6);
+  const iniIso = isoDaData(ini);
+  const fimIso = isoDaData(fim);
+  return lista.filter((a) => a.data >= iniIso && a.data <= fimIso);
+}
+
+function renderEstatisticas() {
+  const lista = agendamentosDoPeriodo();
+  const total = lista.length;
+  const faturamento = lista.reduce((soma, a) => soma + a.preco, 0);
+
+  // Serviço mais pedido no período
+  let popular = "—";
+  if (total > 0) {
+    const contagem = {};
+    lista.forEach((a) => { contagem[a.servicoNome] = (contagem[a.servicoNome] || 0) + 1; });
+    let melhor = 0;
+    for (const nome in contagem) {
+      if (contagem[nome] > melhor) { melhor = contagem[nome]; popular = nome; }
+    }
+    popular += ` (${melhor}×)`;
+  }
+
+  const rotuloPeriodo = adminPeriodo === "dia" ? "hoje" : "nesta semana";
+  el("stat-total").textContent = total;
+  el("stat-total-rotulo").textContent = "Agendamentos " + rotuloPeriodo;
+  el("stat-faturamento").textContent = formatarPreco(faturamento);
+  el("stat-faturamento-rotulo").textContent = "Faturamento estimado " + rotuloPeriodo;
+  el("stat-popular").textContent = popular;
+}
+
+function renderListaAgendamentos() {
+  const cont = el("lista-agendamentos");
+  let lista = agendamentosDoPeriodo();
+
+  if (adminBusca) {
+    lista = lista.filter((a) => a.clienteNome.toLowerCase().includes(adminBusca));
+  }
+
+  // Ordena por data e depois por horário.
+  lista.sort((a, b) => (a.data + a.hora).localeCompare(b.data + b.hora));
+
+  el("lista-contador").textContent = lista.length + (lista.length === 1 ? " agendamento" : " agendamentos");
+
+  if (lista.length === 0) {
+    cont.innerHTML = `<p class="aviso-vazio">📭 Nenhum agendamento encontrado${adminBusca ? " para \"" + adminBusca + "\"" : ""}.</p>`;
+    return;
+  }
+
+  cont.innerHTML = "";
+  lista.forEach((a) => {
+    const prof = PROFISSIONAIS.find((p) => p.id === a.profissionalId);
+    const servico = SERVICOS.find((s) => s.id === a.servicoId);
+    const cor = prof ? prof.cor : "#888";
+    const fim = minutosParaHora(horaParaMinutos(a.hora) + a.duracao);
+    const linha = document.createElement("article");
+    linha.className = "ag-item";
+    linha.style.setProperty("--cor", cor);
+    linha.innerHTML = `
+      <div class="ag-item__hora">
+        <strong>${a.hora}</strong>
+        <span>${fim}</span>
+      </div>
+      <div class="ag-item__corpo">
+        <div class="ag-item__topo">
+          <span class="ag-item__servico">${servico ? servico.icone : ""} ${a.servicoNome}</span>
+          <span class="ag-item__preco">${formatarPreco(a.preco)}</span>
+        </div>
+        <div class="ag-item__meta">
+          <span>👤 ${a.clienteNome}</span>
+          <span>💇 ${a.profissionalNome}</span>
+          ${adminPeriodo === "semana" ? `<span>🗓️ ${formatarDataBR(a.data)}</span>` : ""}
+          ${a.clienteTelefone ? `<span>📞 ${a.clienteTelefone}</span>` : ""}
+        </div>
+      </div>
+      <button class="btn-cancelar" type="button" aria-label="Cancelar agendamento de ${a.clienteNome}">Cancelar</button>`;
+    linha.querySelector(".btn-cancelar").addEventListener("click", () => cancelarAgendamento(a.id, a.clienteNome));
+    cont.appendChild(linha);
+  });
+}
+
+function cancelarAgendamento(id, nome) {
+  const ok = window.confirm(`Cancelar o agendamento de ${nome}?`);
+  if (!ok) return;
+  removerAgendamento(id);
+  renderAdmin();
+  mostrarToast("Agendamento cancelado.", "ok");
+}
+
+/* ----- Calendário semanal ----- */
+function renderCalendario() {
+  const cont = el("calendario-semana");
+  cont.innerHTML = "";
+
+  const ini = new Date(semanaCalendario);
+  const fim = new Date(ini);
+  fim.setDate(fim.getDate() + 6);
+  el("cal-titulo").textContent =
+    `${ini.getDate()} de ${MESES[ini.getMonth()]} – ${fim.getDate()} de ${MESES[fim.getMonth()]}`;
+
+  const lista = carregarAgendamentos();
+  const hoje = hojeIso();
+
+  // Mostra os 6 dias úteis (segunda a sábado); domingo é fechado.
+  for (let i = 0; i < 6; i++) {
+    const d = new Date(ini);
+    d.setDate(d.getDate() + i);
+    const iso = isoDaData(d);
+    const doDia = lista
+      .filter((a) => a.data === iso)
+      .sort((a, b) => a.hora.localeCompare(b.hora));
+
+    const coluna = document.createElement("div");
+    coluna.className = "cal-coluna" + (iso === hoje ? " cal-coluna--hoje" : "");
+    let itens = doDia.map((a) => {
+      const prof = PROFISSIONAIS.find((p) => p.id === a.profissionalId);
+      const cor = prof ? prof.cor : "#888";
+      return `<div class="cal-evento" style="--cor:${cor}" title="${a.hora} ${a.servicoNome} — ${a.clienteNome}">
+                <span class="cal-evento__hora">${a.hora}</span>
+                <span class="cal-evento__nome">${a.clienteNome.split(" ")[0]}</span>
+              </div>`;
+    }).join("");
+    if (doDia.length === 0) itens = `<div class="cal-livre">livre</div>`;
+
+    coluna.innerHTML = `
+      <div class="cal-cabecalho">
+        <span class="cal-dia-semana">${DIAS_SEMANA_CURTO[d.getDay()]}</span>
+        <span class="cal-dia-num">${d.getDate()}</span>
+        <span class="cal-dia-total">${doDia.length}</span>
+      </div>
+      <div class="cal-eventos">${itens}</div>`;
+    cont.appendChild(coluna);
+  }
+}
+
+/* ============================================================
+ * Toast (notificação temporária)
+ * ============================================================ */
+let toastTimer = null;
+function mostrarToast(mensagem, tipo) {
+  const t = el("toast");
+  t.textContent = mensagem;
+  t.className = "toast visivel " + (tipo === "erro" ? "toast--erro" : "toast--ok");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.className = "toast"; }, 3200);
+}

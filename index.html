@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="AgendaFácil — sistema de agendamento online para clínicas e salões de beleza." />
+  <meta name="theme-color" content="#7c3aed" />
+  <title>AgendaFácil — Agendamento para Salões e Clínicas</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- Favicon em SVG inline (data URI) para funcionar offline / em file:// -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%97%93%EF%B8%8F%3C/text%3E%3C/svg%3E" />
+</head>
+<body>
+  <!-- Cabeçalho fixo com marca e navegação -->
+  <header class="cabecalho">
+    <div class="conteudo cabecalho__interno">
+      <a class="marca" href="#" aria-label="AgendaFácil, página inicial">
+        <span class="marca__logo" aria-hidden="true">🗓️</span>
+        <span class="marca__texto">Agenda<span class="marca__destaque">Fácil</span></span>
+      </a>
+
+      <nav class="nav" role="tablist" aria-label="Seções do sistema">
+        <button class="nav-tab ativo" role="tab" data-view="agendar" aria-selected="true">
+          <span aria-hidden="true">✨</span> Agendar
+        </button>
+        <button class="nav-tab" role="tab" data-view="admin" aria-selected="false">
+          <span aria-hidden="true">📊</span> Administração
+        </button>
+      </nav>
+
+      <button id="btn-tema" class="btn-tema" type="button" aria-label="Alternar tema">🌙</button>
+    </div>
+  </header>
+
+  <main class="conteudo principal">
+
+    <!-- ======================= VIEW: AGENDAR (cliente) ======================= -->
+    <section id="view-agendar" class="view" role="tabpanel" aria-label="Agendamento">
+      <div class="hero">
+        <h1 class="hero__titulo">Reserve seu horário em segundos</h1>
+        <p class="hero__sub">Escolha o serviço, o profissional e o melhor horário. Simples, rápido e sem telefonemas.</p>
+      </div>
+
+      <!-- Barra de progresso do assistente -->
+      <ol id="stepper" class="stepper" aria-label="Etapas do agendamento">
+        <li class="step atual" data-step="1"><span class="step__num">1</span><span class="step__rot">Serviço</span></li>
+        <li class="step" data-step="2"><span class="step__num">2</span><span class="step__rot">Profissional</span></li>
+        <li class="step" data-step="3"><span class="step__num">3</span><span class="step__rot">Data & hora</span></li>
+        <li class="step" data-step="4"><span class="step__num">4</span><span class="step__rot">Confirmar</span></li>
+      </ol>
+
+      <div id="assistente" class="cartao assistente">
+
+        <!-- Passo 1 -->
+        <div id="passo-1" class="passo">
+          <h2 class="passo__titulo">1. Qual serviço você deseja?</h2>
+          <p class="passo__ajuda">Selecione um dos serviços abaixo para continuar.</p>
+          <div id="grade-servicos" class="grade-servicos"></div>
+        </div>
+
+        <!-- Passo 2 -->
+        <div id="passo-2" class="passo" hidden>
+          <button class="btn-voltar" type="button" data-voltar="1">← Voltar</button>
+          <h2 class="passo__titulo">2. Com qual profissional?</h2>
+          <div id="resumo-servico-topo" class="resumo-topo"></div>
+          <div id="grade-profissionais" class="grade-prof"></div>
+        </div>
+
+        <!-- Passo 3 -->
+        <div id="passo-3" class="passo" hidden>
+          <button class="btn-voltar" type="button" data-voltar="2">← Voltar</button>
+          <h2 class="passo__titulo">3. Escolha a data e o horário</h2>
+
+          <div class="campo-data">
+            <label for="seletor-data">Data</label>
+            <input type="date" id="seletor-data" />
+          </div>
+
+          <div id="dias-rapidos" class="dias-rapidos" aria-label="Dias com atendimento"></div>
+
+          <p id="info-funcionamento" class="info-funcionamento"></p>
+          <div id="grade-horarios" class="grade-horarios" aria-label="Horários disponíveis"></div>
+
+          <p class="legenda">
+            <span class="legenda__item"><span class="amostra amostra--livre"></span> disponível</span>
+            <span class="legenda__item"><span class="amostra amostra--ocupado"></span> indisponível</span>
+          </p>
+        </div>
+
+        <!-- Passo 4 -->
+        <div id="passo-4" class="passo" hidden>
+          <button class="btn-voltar" type="button" data-voltar="3">← Voltar</button>
+          <h2 class="passo__titulo">4. Confirme seus dados</h2>
+
+          <div class="colunas-confirmacao">
+            <div id="resumo-agendamento" class="cartao-resumo"></div>
+
+            <form id="form-cliente" class="form-cliente" novalidate>
+              <div class="campo">
+                <label for="cliente-nome">Nome completo *</label>
+                <input type="text" id="cliente-nome" name="nome" placeholder="Ex.: Mariana Lopes" autocomplete="name" required />
+              </div>
+              <div class="campo">
+                <label for="cliente-telefone">Telefone / WhatsApp</label>
+                <input type="tel" id="cliente-telefone" name="telefone" placeholder="Ex.: (11) 98812-4571" autocomplete="tel" />
+              </div>
+              <button type="submit" class="btn-primario btn-bloco">Confirmar agendamento ✓</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Passo sucesso -->
+        <div id="passo-sucesso" class="passo passo-sucesso" hidden>
+          <div class="selo-sucesso" aria-hidden="true">✅</div>
+          <h2 class="passo__titulo">Agendamento confirmado!</h2>
+          <p class="passo__ajuda">Guarde as informações abaixo. Nos vemos em breve! 💜</p>
+          <div id="detalhes-sucesso" class="cartao-resumo"></div>
+          <button id="btn-novo" class="btn-primario btn-bloco" type="button">Fazer novo agendamento</button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ======================= VIEW: ADMINISTRAÇÃO ======================= -->
+    <section id="view-admin" class="view" role="tabpanel" aria-label="Painel administrativo" hidden>
+      <div class="hero">
+        <h1 class="hero__titulo">Painel do administrador</h1>
+        <p class="hero__sub">Acompanhe os agendamentos, o faturamento e a agenda da equipe.</p>
+      </div>
+
+      <!-- Cartões de estatística -->
+      <div class="stats">
+        <div class="cartao stat">
+          <span class="stat__icone" aria-hidden="true">📆</span>
+          <span id="stat-total" class="stat__valor">0</span>
+          <span id="stat-total-rotulo" class="stat__rotulo">Agendamentos hoje</span>
+        </div>
+        <div class="cartao stat">
+          <span class="stat__icone" aria-hidden="true">💰</span>
+          <span id="stat-faturamento" class="stat__valor">R$ 0,00</span>
+          <span id="stat-faturamento-rotulo" class="stat__rotulo">Faturamento estimado hoje</span>
+        </div>
+        <div class="cartao stat">
+          <span class="stat__icone" aria-hidden="true">⭐</span>
+          <span id="stat-popular" class="stat__valor stat__valor--texto">—</span>
+          <span class="stat__rotulo">Serviço mais pedido</span>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <div class="barra-filtros">
+        <div id="filtro-periodo" class="segmentado" role="group" aria-label="Período">
+          <button class="ativo" data-periodo="dia" type="button">Hoje</button>
+          <button data-periodo="semana" type="button">Esta semana</button>
+        </div>
+        <div class="campo-busca">
+          <span aria-hidden="true">🔍</span>
+          <input type="search" id="busca-cliente" placeholder="Buscar por nome do cliente…" aria-label="Buscar por nome do cliente" />
+        </div>
+      </div>
+
+      <!-- Lista de agendamentos -->
+      <div class="cartao bloco-lista">
+        <div class="bloco-lista__cabecalho">
+          <h2>Agendamentos</h2>
+          <span id="lista-contador" class="contador">0 agendamentos</span>
+        </div>
+        <div id="lista-agendamentos" class="lista-agendamentos"></div>
+      </div>
+
+      <!-- Calendário semanal -->
+      <div class="cartao bloco-calendario">
+        <div class="bloco-calendario__cabecalho">
+          <h2>Agenda da semana</h2>
+          <div class="cal-nav">
+            <button id="cal-prev" class="btn-icone" type="button" aria-label="Semana anterior">‹</button>
+            <button id="cal-hoje" class="btn-hoje" type="button">Hoje</button>
+            <button id="cal-next" class="btn-icone" type="button" aria-label="Próxima semana">›</button>
+          </div>
+        </div>
+        <p id="cal-titulo" class="cal-titulo"></p>
+        <div id="calendario-semana" class="calendario-semana"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="rodape">
+    <div class="conteudo">
+      <p>AgendaFácil © 2026 — Sistema de agendamento para salões e clínicas.</p>
+      <p class="rodape__autor">Feito por <strong>Joiciano Gomes</strong> 💜</p>
+    </div>
+  </footer>
+
+  <!-- Notificação temporária -->
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <!-- Scripts em ordem de dependência (sem módulos ES, para rodar em file://) -->
+  <script src="js/data.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
