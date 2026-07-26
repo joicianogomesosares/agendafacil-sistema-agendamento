@@ -4,25 +4,74 @@
  * Tudo em escopo global (sem módulos ES) para funcionar em file:// e GitHub Pages.
  */
 
-/* Catálogo de serviços (duração em minutos, preço em reais) */
+/*
+ * Catálogo de serviços (duração em minutos, preço em reais).
+ *
+ * `foto` / `fotoAlt` são apenas apresentação: a capa real usada no card do
+ * passo 1 e nas miniaturas dos resumos. Cada arquivo foi conferido visualmente
+ * e associado ao serviço que ele REALMENTE mostra — por isso alguns nomes de
+ * arquivo não coincidem com o serviço (ver README/manifesto):
+ *   servicos/corte.jpg     -> mostra APARO DE BARBA   (usado em "Barba")
+ *   servicos/barba.jpg     -> mostra CORTE DE CABELO  (usado em "Corte de Cabelo")
+ *   servicos/coloracao.jpg -> mostra ACABAMENTO DE PELOS DO ROSTO (usado em "Design de Sobrancelhas")
+ *   servicos/escova.jpg    -> mostra CORTE DE CABELO  (não utilizado; duplicaria a capa do corte)
+ *   servicos/massagem.jpg  -> mostra LIXAMENTO DE UNHAS (usado em "Manicure")
+ *   servicos/manicure.jpg  -> mostra MASSAGEM/ESFOLIAÇÃO DAS MÃOS (usado em "Massagem Relaxante")
+ */
 const SERVICOS = [
-  { id: "corte",        nome: "Corte de Cabelo",         duracao: 45, preco: 60,  icone: "✂️", desc: "Corte personalizado com lavagem e finalização." },
-  { id: "barba",        nome: "Barba",                   duracao: 30, preco: 40,  icone: "🧔", desc: "Modelagem e aparo de barba com toalha quente." },
-  { id: "coloracao",    nome: "Coloração",               duracao: 90, preco: 180, icone: "🎨", desc: "Coloração completa com produtos profissionais." },
-  { id: "escova",       nome: "Escova & Hidratação",     duracao: 40, preco: 70,  icone: "💆", desc: "Escova modelada com tratamento hidratante." },
-  { id: "manicure",     nome: "Manicure",                duracao: 40, preco: 45,  icone: "💅", desc: "Cuidado completo das unhas das mãos." },
-  { id: "limpeza",      nome: "Limpeza de Pele",         duracao: 60, preco: 120, icone: "🧖", desc: "Limpeza profunda com extração e máscara." },
-  { id: "massagem",     nome: "Massagem Relaxante",      duracao: 50, preco: 150, icone: "🌿", desc: "Massagem corporal para alívio de tensões." },
-  { id: "sobrancelha",  nome: "Design de Sobrancelhas",  duracao: 20, preco: 35,  icone: "👁️", desc: "Design e correção com henna opcional." },
+  { id: "corte",        nome: "Corte de Cabelo",         duracao: 45, preco: 60,  desc: "Corte personalizado com lavagem e finalização.",
+    foto: "assets/img/servicos/barba.jpg",
+    fotoAlt: "Cliente tendo o cabelo cortado com tesoura e pente na barbearia" },
+
+  { id: "barba",        nome: "Barba",                   duracao: 30, preco: 40,  desc: "Modelagem e aparo de barba com toalha quente.",
+    foto: "assets/img/servicos/corte.jpg",
+    fotoAlt: "Barbeiro aparando a barba de um cliente com tesoura e pente, refletido no espelho" },
+
+  { id: "coloracao",    nome: "Coloração",               duracao: 90, preco: 180, desc: "Coloração completa com produtos profissionais.",
+    foto: "assets/img/salon4.jpg",
+    fotoAlt: "Cliente com o cabelo preso em mechas e capa plástica durante o serviço de coloração" },
+
+  { id: "escova",       nome: "Escova & Hidratação",     duracao: 40, preco: 70,  desc: "Escova modelada com tratamento hidratante.",
+    foto: "assets/img/salon3.jpg",
+    fotoAlt: "Cabelo longo sendo modelado com secador e escova redonda" },
+
+  { id: "manicure",     nome: "Manicure",                duracao: 40, preco: 45,  desc: "Cuidado completo das unhas das mãos.",
+    foto: "assets/img/servicos/massagem.jpg",
+    fotoAlt: "Manicure lixando as unhas de uma cliente usando luvas" },
+
+  { id: "limpeza",      nome: "Limpeza de Pele",         duracao: 60, preco: 120, desc: "Limpeza profunda com extração e máscara.",
+    foto: "assets/img/servicos/pele.jpg",
+    fotoAlt: "Esteticista cuidando da pele de uma cliente em cabine do salão" },
+
+  { id: "massagem",     nome: "Massagem Relaxante",      duracao: 50, preco: 150, desc: "Massagem corporal para alívio de tensões.",
+    foto: "assets/img/servicos/manicure.jpg",
+    fotoAlt: "Profissional massageando as mãos de uma cliente com produto esfoliante" },
+
+  { id: "sobrancelha",  nome: "Design de Sobrancelhas",  duracao: 20, preco: 35,  desc: "Design e correção com henna opcional.",
+    foto: "assets/img/servicos/coloracao.jpg",
+    fotoAlt: "Profissional fazendo o acabamento dos pelos do rosto de um cliente" },
 ];
 
-/* Equipe de profissionais. Cada um atende uma lista de serviços (por id). */
+/*
+ * Equipe de profissionais. Cada um atende uma lista de serviços (por id).
+ * `foto` / `fotoAlt` são apenas apresentação (retrato circular no passo 2).
+ * equipe/p4.jpg não é usado: é praticamente a mesma pessoa/enquadramento de p1.jpg.
+ */
 const PROFISSIONAIS = [
-  { id: "ana",      nome: "Ana Beatriz Costa",     cargo: "Cabeleireira",         cor: "#7c3aed", servicos: ["corte", "coloracao", "escova"] },
-  { id: "carlos",   nome: "Carlos Henrique Souza", cargo: "Barbeiro",             cor: "#0d9488", servicos: ["corte", "barba"] },
-  { id: "juliana",  nome: "Juliana Ferreira",      cargo: "Manicure & Designer",  cor: "#db2777", servicos: ["manicure", "sobrancelha"] },
-  { id: "patricia", nome: "Patrícia Almeida",      cargo: "Esteticista",          cor: "#ea580c", servicos: ["limpeza", "massagem", "sobrancelha"] },
-  { id: "rafael",   nome: "Rafael Oliveira",       cargo: "Cabeleireiro",         cor: "#2563eb", servicos: ["corte", "coloracao", "barba", "escova"] },
+  { id: "ana",      nome: "Ana Beatriz Costa",     cargo: "Cabeleireira",         cor: "#7c3aed", servicos: ["corte", "coloracao", "escova"],
+    foto: "assets/img/equipe/p2.jpg", fotoAlt: "Retrato de Ana Beatriz Costa, cabeleireira" },
+
+  { id: "carlos",   nome: "Carlos Henrique Souza", cargo: "Barbeiro",             cor: "#0d9488", servicos: ["corte", "barba"],
+    foto: "assets/img/equipe/p1.jpg", fotoAlt: "Retrato de Carlos Henrique Souza, barbeiro" },
+
+  { id: "juliana",  nome: "Juliana Ferreira",      cargo: "Manicure & Designer",  cor: "#db2777", servicos: ["manicure", "sobrancelha"],
+    foto: "assets/img/equipe/p3.jpg", fotoAlt: "Retrato de Juliana Ferreira, manicure e designer de sobrancelhas" },
+
+  { id: "patricia", nome: "Patrícia Almeida",      cargo: "Esteticista",          cor: "#ea580c", servicos: ["limpeza", "massagem", "sobrancelha"],
+    foto: "assets/img/equipe/p6.jpg", fotoAlt: "Retrato de Patrícia Almeida, esteticista" },
+
+  { id: "rafael",   nome: "Rafael Oliveira",       cargo: "Cabeleireiro",         cor: "#2563eb", servicos: ["corte", "coloracao", "barba", "escova"],
+    foto: "assets/img/equipe/p5.jpg", fotoAlt: "Retrato de Rafael Oliveira, cabeleireiro" },
 ];
 
 /*

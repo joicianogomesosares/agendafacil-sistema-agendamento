@@ -8,27 +8,31 @@
   <title>AgendaFácil — Agendamento para Salões e Clínicas</title>
   <link rel="stylesheet" href="css/style.css" />
   <!-- Favicon em SVG inline (data URI) para funcionar offline / em file:// -->
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%97%93%EF%B8%8F%3C/text%3E%3C/svg%3E" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%3E%3Crect%20width='24'%20height='24'%20rx='6'%20fill='%237c3aed'/%3E%3Cg%20fill='none'%20stroke='%23ffffff'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Crect%20x='5'%20y='6'%20width='14'%20height='13'%20rx='2'/%3E%3Cline%20x1='15'%20y1='4'%20x2='15'%20y2='8'/%3E%3Cline%20x1='9'%20y1='4'%20x2='9'%20y2='8'/%3E%3Cline%20x1='5'%20y1='10'%20x2='19'%20y2='10'/%3E%3C/g%3E%3C/svg%3E" />
 </head>
 <body>
   <!-- Cabeçalho fixo com marca e navegação -->
   <header class="cabecalho">
     <div class="conteudo cabecalho__interno">
       <a class="marca" href="#" aria-label="AgendaFácil, página inicial">
-        <span class="marca__logo" aria-hidden="true">🗓️</span>
+        <span class="marca__logo" aria-hidden="true">
+          <svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </span>
         <span class="marca__texto">Agenda<span class="marca__destaque">Fácil</span></span>
       </a>
 
       <nav class="nav" role="tablist" aria-label="Seções do sistema">
         <button class="nav-tab ativo" role="tab" data-view="agendar" aria-selected="true">
-          <span aria-hidden="true">✨</span> Agendar
+          <svg class="ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Agendar
         </button>
         <button class="nav-tab" role="tab" data-view="admin" aria-selected="false">
-          <span aria-hidden="true">📊</span> Administração
+          <svg class="ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          Administração
         </button>
       </nav>
 
-      <button id="btn-tema" class="btn-tema" type="button" aria-label="Alternar tema">🌙</button>
+      <button id="btn-tema" class="btn-tema" type="button" aria-label="Alternar tema"></button>
     </div>
   </header>
 
@@ -36,16 +40,62 @@
 
     <!-- ======================= VIEW: AGENDAR (cliente) ======================= -->
     <section id="view-agendar" class="view" role="tabpanel" aria-label="Agendamento">
-      <div class="hero">
-        <h1 class="hero__titulo">Reserve seu horário em segundos</h1>
-        <p class="hero__sub">Escolha o serviço, o profissional e o melhor horário. Simples, rápido e sem telefonemas.</p>
+
+      <!-- Hero com foto real do salão e overlay escuro para legibilidade -->
+      <div class="hero-cartao">
+        <img class="hero-cartao__bg" src="assets/img/hero.jpg" alt="Cabeleireira aplicando coloração no cabelo de uma cliente no salão" loading="lazy" decoding="async" />
+        <div class="hero-cartao__overlay" aria-hidden="true"></div>
+        <div class="hero-cartao__inner">
+          <span class="hero-cartao__badge">
+            <svg class="ic" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>
+            Salão &amp; Estética
+          </span>
+          <h1 class="hero-cartao__titulo">Reserve seu horário em segundos</h1>
+          <p class="hero-cartao__sub">Escolha o serviço, o profissional e o melhor horário. Simples, rápido e sem telefonemas.</p>
+
+          <div class="hero-cartao__acoes">
+            <a href="#assistente" class="btn-primario btn-hero">
+              Agendar agora
+              <svg class="ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </a>
+            <a href="#grade-servicos" class="btn-ghost">Ver serviços</a>
+          </div>
+
+          <!-- Como funciona: 4 passos com ícones SVG -->
+          <ol class="hero-passos" aria-label="Como funciona">
+            <li class="hero-passo">
+              <span class="hero-passo__ic">
+                <svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>
+              </span>
+              <span class="hero-passo__txt"><small>Passo 1</small>Serviço</span>
+            </li>
+            <li class="hero-passo">
+              <span class="hero-passo__ic">
+                <svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              </span>
+              <span class="hero-passo__txt"><small>Passo 2</small>Profissional</span>
+            </li>
+            <li class="hero-passo">
+              <span class="hero-passo__ic">
+                <svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </span>
+              <span class="hero-passo__txt"><small>Passo 3</small>Data &amp; hora</span>
+            </li>
+            <li class="hero-passo">
+              <span class="hero-passo__ic">
+                <svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+              </span>
+              <span class="hero-passo__txt"><small>Passo 4</small>Confirmar</span>
+            </li>
+          </ol>
+        </div>
       </div>
 
       <!-- Barra de progresso do assistente -->
       <ol id="stepper" class="stepper" aria-label="Etapas do agendamento">
         <li class="step atual" data-step="1"><span class="step__num">1</span><span class="step__rot">Serviço</span></li>
         <li class="step" data-step="2"><span class="step__num">2</span><span class="step__rot">Profissional</span></li>
-        <li class="step" data-step="3"><span class="step__num">3</span><span class="step__rot">Data & hora</span></li>
+        <li class="step" data-step="3"><span class="step__num">3</span><span class="step__rot">Data &amp; hora</span></li>
         <li class="step" data-step="4"><span class="step__num">4</span><span class="step__rot">Confirmar</span></li>
       </ol>
 
@@ -60,7 +110,10 @@
 
         <!-- Passo 2 -->
         <div id="passo-2" class="passo" hidden>
-          <button class="btn-voltar" type="button" data-voltar="1">← Voltar</button>
+          <button class="btn-voltar" type="button" data-voltar="1">
+            <svg class="ic" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            Voltar
+          </button>
           <h2 class="passo__titulo">2. Com qual profissional?</h2>
           <div id="resumo-servico-topo" class="resumo-topo"></div>
           <div id="grade-profissionais" class="grade-prof"></div>
@@ -68,7 +121,10 @@
 
         <!-- Passo 3 -->
         <div id="passo-3" class="passo" hidden>
-          <button class="btn-voltar" type="button" data-voltar="2">← Voltar</button>
+          <button class="btn-voltar" type="button" data-voltar="2">
+            <svg class="ic" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            Voltar
+          </button>
           <h2 class="passo__titulo">3. Escolha a data e o horário</h2>
 
           <div class="campo-data">
@@ -89,7 +145,10 @@
 
         <!-- Passo 4 -->
         <div id="passo-4" class="passo" hidden>
-          <button class="btn-voltar" type="button" data-voltar="3">← Voltar</button>
+          <button class="btn-voltar" type="button" data-voltar="3">
+            <svg class="ic" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            Voltar
+          </button>
           <h2 class="passo__titulo">4. Confirme seus dados</h2>
 
           <div class="colunas-confirmacao">
@@ -104,21 +163,89 @@
                 <label for="cliente-telefone">Telefone / WhatsApp</label>
                 <input type="tel" id="cliente-telefone" name="telefone" placeholder="Ex.: (11) 98812-4571" autocomplete="tel" />
               </div>
-              <button type="submit" class="btn-primario btn-bloco">Confirmar agendamento ✓</button>
+              <button type="submit" class="btn-primario btn-bloco">
+                Confirmar agendamento
+                <svg class="ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+              </button>
             </form>
           </div>
         </div>
 
         <!-- Passo sucesso -->
         <div id="passo-sucesso" class="passo passo-sucesso" hidden>
-          <div class="selo-sucesso" aria-hidden="true">✅</div>
+          <div class="selo-sucesso" aria-hidden="true">
+            <svg class="ic" viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
           <h2 class="passo__titulo">Agendamento confirmado!</h2>
-          <p class="passo__ajuda">Guarde as informações abaixo. Nos vemos em breve! 💜</p>
+          <p class="passo__ajuda">Guarde as informações abaixo. Nos vemos em breve!</p>
           <div id="detalhes-sucesso" class="cartao-resumo"></div>
           <button id="btn-novo" class="btn-primario btn-bloco" type="button">Fazer novo agendamento</button>
         </div>
 
       </div>
+
+      <!-- Benefícios / prova de valor (ícones SVG, dados reais do sistema) -->
+      <section class="beneficios" aria-label="Por que escolher a AgendaFácil">
+        <article class="beneficio">
+          <span class="beneficio__ic">
+            <svg class="ic" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </span>
+          <h3>Reserva em segundos</h3>
+          <p>Escolha serviço, profissional e horário sem ligar nem esperar.</p>
+        </article>
+        <article class="beneficio">
+          <span class="beneficio__ic">
+            <svg class="ic" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </span>
+          <h3>Equipe especializada</h3>
+          <p>Profissionais de cabelo, barba, estética e unhas à sua disposição.</p>
+        </article>
+        <article class="beneficio">
+          <span class="beneficio__ic">
+            <svg class="ic" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.8L20 10.7l-6.1 1.9L12 18l-1.9-5.4L4 10.7l6.1-1.9L12 3z"/></svg>
+          </span>
+          <h3>8 serviços completos</h3>
+          <p>Do corte à massagem relaxante, com preço e duração sempre claros.</p>
+        </article>
+        <article class="beneficio">
+          <span class="beneficio__ic">
+            <svg class="ic" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </span>
+          <h3>Segunda a sábado</h3>
+          <p>Atendimento com horários flexíveis ao longo de toda a semana.</p>
+        </article>
+      </section>
+
+      <!-- Nosso espaço: fotos reais do salão -->
+      <section class="galeria" aria-label="Nosso espaço">
+        <div class="secao-cabecalho">
+          <h2>Nosso espaço</h2>
+          <p>Ambiente acolhedor, equipe atenciosa e resultados que falam por si.</p>
+        </div>
+        <div class="galeria__grade">
+          <figure class="galeria__item galeria__item--largo">
+            <img src="assets/img/salon5.jpg" alt="Cabeleireira finalizando o cabelo de uma cliente com chapinha em um salão de paredes azuis" loading="lazy" decoding="async" />
+            <figcaption>Finalização e styling</figcaption>
+          </figure>
+          <figure class="galeria__item galeria__item--largo">
+            <img src="assets/img/salon2.jpg" alt="Detalhe de um corte de cabelo sendo feito com máquina e pente" loading="lazy" decoding="async" />
+            <figcaption>Cortes com precisão</figcaption>
+          </figure>
+          <figure class="galeria__item galeria__item--alto">
+            <img src="assets/img/salon1.jpg" alt="Cabeleireiro penteando o cabelo de uma cliente durante o atendimento" loading="lazy" decoding="async" />
+            <figcaption>Atendimento personalizado</figcaption>
+          </figure>
+          <figure class="galeria__item galeria__item--alto">
+            <img src="assets/img/salon3.jpg" alt="Cabelo longo sendo modelado com secador e escova redonda" loading="lazy" decoding="async" />
+            <figcaption>Escova e hidratação</figcaption>
+          </figure>
+          <figure class="galeria__item galeria__item--alto">
+            <img src="assets/img/salon4.jpg" alt="Cabelo separado em mechas e preso com presilhas durante o atendimento" loading="lazy" decoding="async" />
+            <figcaption>Coloração e tratamentos</figcaption>
+          </figure>
+        </div>
+      </section>
+
     </section>
 
     <!-- ======================= VIEW: ADMINISTRAÇÃO ======================= -->
@@ -131,17 +258,23 @@
       <!-- Cartões de estatística -->
       <div class="stats">
         <div class="cartao stat">
-          <span class="stat__icone" aria-hidden="true">📆</span>
+          <span class="stat__icone" aria-hidden="true">
+            <svg class="ic" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </span>
           <span id="stat-total" class="stat__valor">0</span>
           <span id="stat-total-rotulo" class="stat__rotulo">Agendamentos hoje</span>
         </div>
         <div class="cartao stat">
-          <span class="stat__icone" aria-hidden="true">💰</span>
+          <span class="stat__icone" aria-hidden="true">
+            <svg class="ic" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          </span>
           <span id="stat-faturamento" class="stat__valor">R$ 0,00</span>
           <span id="stat-faturamento-rotulo" class="stat__rotulo">Faturamento estimado hoje</span>
         </div>
         <div class="cartao stat">
-          <span class="stat__icone" aria-hidden="true">⭐</span>
+          <span class="stat__icone" aria-hidden="true">
+            <svg class="ic" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </span>
           <span id="stat-popular" class="stat__valor stat__valor--texto">—</span>
           <span class="stat__rotulo">Serviço mais pedido</span>
         </div>
@@ -154,7 +287,7 @@
           <button data-periodo="semana" type="button">Esta semana</button>
         </div>
         <div class="campo-busca">
-          <span aria-hidden="true">🔍</span>
+          <svg class="ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <input type="search" id="busca-cliente" placeholder="Buscar por nome do cliente…" aria-label="Buscar por nome do cliente" />
         </div>
       </div>
@@ -173,9 +306,13 @@
         <div class="bloco-calendario__cabecalho">
           <h2>Agenda da semana</h2>
           <div class="cal-nav">
-            <button id="cal-prev" class="btn-icone" type="button" aria-label="Semana anterior">‹</button>
+            <button id="cal-prev" class="btn-icone" type="button" aria-label="Semana anterior">
+              <svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
             <button id="cal-hoje" class="btn-hoje" type="button">Hoje</button>
-            <button id="cal-next" class="btn-icone" type="button" aria-label="Próxima semana">›</button>
+            <button id="cal-next" class="btn-icone" type="button" aria-label="Próxima semana">
+              <svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
           </div>
         </div>
         <p id="cal-titulo" class="cal-titulo"></p>
@@ -188,7 +325,7 @@
   <footer class="rodape">
     <div class="conteudo">
       <p>AgendaFácil © 2026 — Sistema de agendamento para salões e clínicas.</p>
-      <p class="rodape__autor">Feito por <strong>Joiciano Gomes</strong> 💜</p>
+      <p class="rodape__autor">Feito por <strong>Joiciano Gomes</strong></p>
     </div>
   </footer>
 

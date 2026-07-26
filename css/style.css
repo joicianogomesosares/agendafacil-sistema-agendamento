@@ -193,25 +193,68 @@ input { font-family: inherit; }
 
 .resumo-topo {
   background: var(--primaria-suave); color: var(--texto); border-radius: var(--raio-sm);
-  padding: 11px 15px; margin-bottom: 20px; font-size: 0.93rem;
+  padding: 10px 14px; margin-bottom: 20px; font-size: 0.93rem;
+  display: flex; align-items: center; gap: 12px;
 }
 .resumo-topo .mini-icone { margin-right: 2px; }
 .resumo-topo .mini-sep { color: var(--texto-suave); margin: 0 4px; }
+.resumo-topo__capa { display: block; flex-shrink: 0; line-height: 0; }
+.resumo-topo__txt { min-width: 0; }
 
-/* ---------- Grade de serviços ---------- */
-.grade-servicos { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+/* ---------- Miniaturas de foto (serviço / profissional) ----------
+ * Usadas nos resumos e na lista do painel. Proporção 1:1 travada +
+ * object-fit: cover para a foto nunca esticar.
+ */
+.mini-foto {
+  display: inline-block; vertical-align: middle; flex-shrink: 0;
+  width: 26px; height: 26px; aspect-ratio: 1 / 1; border-radius: 8px;
+  object-fit: cover; object-position: center;
+  background: var(--bg-2); border: 1px solid var(--borda);
+}
+.mini-foto--circ { border-radius: 50%; }
+.mini-foto--xs { width: 22px; height: 22px; }
+.mini-foto--sm { width: 30px; height: 30px; border-radius: 9px; }
+.mini-foto--md { width: 44px; height: 44px; border-radius: 11px; }
+
+/* ---------- Grade de serviços (capa em foto real) ---------- */
+.grade-servicos { display: grid; grid-template-columns: repeat(auto-fill, minmax(232px, 1fr)); gap: 14px; }
 .card-servico {
-  display: flex; gap: 13px; text-align: left; align-items: flex-start;
-  background: var(--superficie-2); border: 1.5px solid var(--borda); border-radius: var(--raio-sm);
-  padding: 15px; transition: var(--transicao);
+  display: flex; flex-direction: column; text-align: left; align-items: stretch;
+  background: var(--superficie-2); border: 1.5px solid var(--borda); border-radius: var(--raio);
+  padding: 0; overflow: hidden; position: relative; transition: var(--transicao);
 }
 .card-servico:hover { border-color: var(--primaria); transform: translateY(-2px); box-shadow: var(--sombra-md); }
-.card-servico.selecionado { border-color: var(--primaria); background: var(--primaria-suave); }
+.card-servico.selecionado { border-color: var(--primaria); box-shadow: 0 0 0 3px var(--primaria-suave); }
+.card-servico.selecionado .card-servico__info { background: var(--primaria-suave); }
+
+/* Capa: a proporção fixa + object-fit evitam qualquer distorção da foto. */
+.card-servico__capa { display: block; position: relative; overflow: hidden; background: var(--bg-2); }
+.card-servico__capa img {
+  display: block; width: 100%; height: auto; aspect-ratio: 16 / 10;
+  object-fit: cover; object-position: center;
+  transition: transform 450ms ease;
+}
+.card-servico:hover .card-servico__capa img { transform: scale(1.05); }
+
+/* Selo de "selecionado" sobre a foto (aparece só quando o card está ativo). */
+.card-servico__marca {
+  position: absolute; top: 10px; right: 10px; width: 28px; height: 28px; border-radius: 50%;
+  background: var(--primaria); color: #fff; display: grid; place-items: center;
+  opacity: 0; transform: scale(0.55); transition: var(--transicao);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.32);
+}
+.card-servico.selecionado .card-servico__marca { opacity: 1; transform: none; }
+
+/* Fallback (serviço sem foto cadastrada): mantém o selo com ícone SVG. */
 .card-servico__icone {
   font-size: 1.5rem; width: 46px; height: 46px; flex-shrink: 0; border-radius: 12px;
   display: grid; place-items: center; background: var(--superficie); box-shadow: var(--sombra-sm);
+  margin: 15px 15px 0;
 }
-.card-servico__info { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.card-servico__info {
+  display: flex; flex-direction: column; gap: 3px; min-width: 0;
+  padding: 13px 15px 15px; transition: var(--transicao);
+}
 .card-servico__nome { font-weight: 700; font-size: 1rem; }
 .card-servico__desc { font-size: 0.82rem; color: var(--texto-suave); line-height: 1.35; }
 .card-servico__meta { display: flex; align-items: center; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
@@ -232,6 +275,21 @@ input { font-family: inherit; }
   display: grid; place-items: center; font-weight: 800; color: #fff; font-size: 1rem;
   background: var(--cor, var(--primaria)); text-transform: uppercase;
 }
+
+/* Retrato circular real do profissional (passo 2). O anel usa a cor da agenda. */
+.card-prof__foto {
+  width: 56px; height: 56px; flex-shrink: 0; border-radius: 50%; overflow: hidden;
+  background: var(--bg-2); display: block;
+  box-shadow: 0 0 0 2px var(--superficie-2), 0 0 0 4px color-mix(in srgb, var(--cor, var(--primaria)) 60%, transparent);
+  transition: var(--transicao);
+}
+.card-prof__foto img {
+  display: block; width: 100%; height: 100%; aspect-ratio: 1 / 1;
+  object-fit: cover; object-position: center;
+}
+.card-prof:hover .card-prof__foto { transform: scale(1.04); }
+.card-prof.selecionado .card-prof__foto { box-shadow: 0 0 0 2px var(--superficie-2), 0 0 0 4px var(--primaria); }
+
 .card-prof__info { display: flex; flex-direction: column; }
 .card-prof__nome { font-weight: 700; }
 .card-prof__cargo { font-size: 0.83rem; color: var(--texto-suave); }
@@ -433,6 +491,207 @@ input { font-family: inherit; }
   .ag-item { grid-template-columns: 56px 1fr; }
   .ag-item .btn-cancelar { grid-column: 1 / -1; }
   .calendario-semana { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ============================================================
+ * Ícones SVG (substituem os emojis de interface)
+ * ============================================================ */
+.ic { display: inline-block; vertical-align: middle; flex-shrink: 0; }
+
+/* Marca (cabeçalho) */
+.marca__logo {
+  width: 34px; height: 34px; border-radius: 9px; background: var(--gradiente);
+  display: grid; place-items: center; box-shadow: var(--sombra-sm);
+}
+.marca__logo .ic { color: #fff; }
+
+/* Abas de navegação e botões auxiliares */
+.nav-tab .ic { flex-shrink: 0; }
+.btn-tema .ic { color: var(--texto); }
+.btn-tema:hover .ic { color: var(--primaria); }
+.btn-icone .ic { pointer-events: none; }
+
+/* Botões primários: alinham texto + ícone */
+.btn-primario { display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
+.btn-voltar { display: inline-flex; align-items: center; gap: 6px; }
+
+/* Tag de duração no card de serviço */
+.card-servico .tag { display: inline-flex; align-items: center; gap: 5px; }
+.card-servico__icone .ic { color: var(--primaria); }
+.resumo-topo .mini-icone { display: inline-flex; align-items: center; }
+.resumo-topo .mini-icone .ic { color: var(--primaria); }
+
+/* Linha de informação de funcionamento */
+.info-funcionamento { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.info-funcionamento .ic { color: var(--primaria); }
+
+/* Busca do painel */
+.campo-busca .ic { color: var(--texto-suave); }
+
+/* Estados vazios com ícone acima do texto */
+.aviso-vazio .ic { display: block; margin: 0 auto 8px; color: var(--texto-suave); opacity: 0.65; }
+
+/* Resumo (dd com miniatura de foto do serviço / profissional) */
+.resumo__lista dd .ic { color: var(--primaria); margin-right: 3px; }
+.resumo__lista dd .mini-foto { margin-right: 5px; }
+
+/* Lista de agendamentos: a miniatura do serviço ganha um anel na cor da agenda */
+.ag-item__servico { display: inline-flex; align-items: center; gap: 9px; }
+.ag-item__servico .ic { color: var(--cor, var(--primaria)); }
+.ag-item__servico .mini-foto { border-color: color-mix(in srgb, var(--cor, var(--primaria)) 55%, transparent); }
+.ag-item__meta span { display: inline-flex; align-items: center; gap: 5px; }
+.ag-item__meta .ic { color: var(--texto-suave); }
+.ag-item__prof { gap: 7px; }
+
+/* Cartões de estatística: ícone em selo colorido */
+.stat__icone {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: var(--primaria-suave); color: var(--primaria);
+  display: grid; place-items: center; margin-bottom: 10px;
+}
+
+/* Selo de sucesso: círculo com check */
+.selo-sucesso {
+  width: 80px; height: 80px; margin: 0 auto 12px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: linear-gradient(135deg, var(--ok), #22c55e);
+  box-shadow: 0 12px 26px -8px color-mix(in srgb, var(--ok) 65%, transparent);
+}
+.selo-sucesso .ic { color: #fff; }
+
+/* ============================================================
+ * Hero com foto real (booking)
+ * ============================================================ */
+.hero-cartao {
+  position: relative; border-radius: 24px; overflow: hidden;
+  margin-bottom: 30px; box-shadow: var(--sombra-lg); isolation: isolate;
+}
+.hero-cartao__bg {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; object-position: center; z-index: -2;
+}
+.hero-cartao__overlay {
+  position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(180deg, rgba(23,10,44,0.30) 0%, rgba(23,10,44,0.55) 48%, rgba(15,7,30,0.88) 100%);
+}
+.hero-cartao__inner {
+  position: relative; color: #fff;
+  padding: clamp(28px, 5vw, 60px) clamp(22px, 4vw, 54px);
+  min-height: 440px; display: flex; flex-direction: column; justify-content: flex-end;
+}
+.hero-cartao__badge {
+  display: inline-flex; align-items: center; gap: 8px; align-self: flex-start;
+  background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.28);
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  color: #fff; padding: 7px 14px; border-radius: var(--raio-pill);
+  font-size: 0.8rem; font-weight: 700; letter-spacing: 0.01em; margin-bottom: 18px;
+}
+.hero-cartao__titulo {
+  font-size: clamp(2rem, 5.2vw, 3.2rem); font-weight: 800; max-width: 16ch;
+  text-shadow: 0 2px 24px rgba(0,0,0,0.35);
+}
+.hero-cartao__sub {
+  font-size: clamp(1rem, 2vw, 1.18rem); max-width: 52ch; margin-top: 14px;
+  color: rgba(255,255,255,0.92); text-shadow: 0 1px 12px rgba(0,0,0,0.3);
+}
+.hero-cartao__acoes { margin-top: 26px; display: flex; gap: 12px; flex-wrap: wrap; }
+.btn-hero { padding: 14px 26px; font-size: 1.02rem; }
+.btn-ghost {
+  display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
+  background: rgba(255,255,255,0.12); color: #fff; border: 1.5px solid rgba(255,255,255,0.42);
+  border-radius: var(--raio-sm); padding: 13px 22px; font-weight: 700; font-size: 0.98rem;
+  -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); transition: var(--transicao);
+}
+.btn-ghost:hover { background: rgba(255,255,255,0.22); transform: translateY(-2px); }
+
+/* "Como funciona" dentro do hero */
+.hero-passos {
+  list-style: none; display: flex; flex-wrap: wrap; gap: 14px 26px;
+  margin-top: 32px; padding: 22px 0 0; border-top: 1px solid rgba(255,255,255,0.2);
+}
+.hero-passo { display: flex; align-items: center; gap: 11px; }
+.hero-passo__ic {
+  width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0;
+  background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.28);
+  display: grid; place-items: center; color: #fff;
+}
+.hero-passo__txt { display: flex; flex-direction: column; line-height: 1.2; color: #fff; font-weight: 700; font-size: 0.95rem; }
+.hero-passo__txt small { font-size: 0.68rem; font-weight: 700; opacity: 0.72; text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* ============================================================
+ * Faixa de benefícios
+ * ============================================================ */
+.beneficios { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 40px 0; }
+.beneficio {
+  background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--raio);
+  padding: 22px; box-shadow: var(--sombra-sm); transition: var(--transicao);
+}
+.beneficio:hover { transform: translateY(-3px); box-shadow: var(--sombra-md); border-color: var(--primaria); }
+.beneficio__ic {
+  width: 46px; height: 46px; border-radius: 12px; margin-bottom: 14px;
+  background: var(--primaria-suave); color: var(--primaria); display: grid; place-items: center;
+}
+.beneficio h3 { font-size: 1rem; margin-bottom: 5px; }
+.beneficio p { font-size: 0.88rem; color: var(--texto-suave); line-height: 1.45; }
+
+/* ============================================================
+ * Cabeçalho de seção + Galeria "Nosso espaço"
+ * ============================================================ */
+.secao-cabecalho { text-align: center; max-width: 600px; margin: 0 auto 26px; }
+.secao-cabecalho h2 { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 800; }
+.secao-cabecalho p { color: var(--texto-suave); margin-top: 8px; }
+
+.galeria { margin: 4px 0 10px; }
+/* Mosaico: 2 fotos largas em cima, 3 verticais embaixo (grade de 6 colunas). */
+.galeria__grade { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; }
+.galeria__item {
+  position: relative; margin: 0; border-radius: var(--raio); overflow: hidden;
+  box-shadow: var(--sombra-md); border: 1px solid var(--borda);
+  transition: var(--transicao);
+}
+.galeria__item--largo { grid-column: span 3; }
+.galeria__item--alto  { grid-column: span 2; }
+.galeria__item img {
+  display: block; width: 100%; height: auto; aspect-ratio: 4 / 5;
+  object-fit: cover; object-position: center;
+  transition: transform 450ms ease;
+}
+.galeria__item--largo img { aspect-ratio: 16 / 10; }
+.galeria__item:hover { box-shadow: var(--sombra-lg); }
+.galeria__item:hover img { transform: scale(1.05); }
+/* Gradiente garante contraste do texto branco sobre qualquer foto. */
+.galeria__item figcaption {
+  position: absolute; inset: auto 0 0 0; padding: 26px 16px 15px; color: #fff;
+  font-weight: 700; font-size: 0.92rem; display: flex; align-items: center; gap: 8px;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.55);
+  background: linear-gradient(transparent, rgba(0,0,0,0.30) 35%, rgba(0,0,0,0.80));
+}
+.galeria__item figcaption .ic { color: #fff; }
+
+/* ============================================================
+ * Responsivo — novos blocos
+ * ============================================================ */
+@media (max-width: 860px) {
+  .beneficios { grid-template-columns: repeat(2, 1fr); }
+  /* 6 colunas -> 2: as fotos se emparelham 2 a 2. */
+  .galeria__grade { grid-template-columns: repeat(2, 1fr); }
+  .galeria__item--largo, .galeria__item--alto { grid-column: span 1; }
+  /* A última foto ficaria sozinha (5 itens): ocupa a linha inteira. */
+  .galeria__item--alto:last-child { grid-column: span 2; }
+  .galeria__item--alto:last-child img { aspect-ratio: 16 / 10; }
+}
+@media (max-width: 760px) {
+  .hero-cartao__inner { min-height: 380px; }
+}
+@media (max-width: 560px) {
+  .beneficios { grid-template-columns: 1fr; }
+  .hero-cartao__acoes .btn-primario, .hero-cartao__acoes .btn-ghost { flex: 1; justify-content: center; }
+  .hero-passo { flex: 1 1 40%; }
+  /* Uma foto por linha, todas em 16:10 para não ocupar a tela inteira. */
+  .galeria__grade { grid-template-columns: 1fr; }
+  .galeria__item--largo, .galeria__item--alto,
+  .galeria__item--alto:last-child { grid-column: span 1; }
+  .galeria__item img, .galeria__item--alto img { aspect-ratio: 16 / 10; }
 }
 
 /* Respeita quem prefere menos animações */

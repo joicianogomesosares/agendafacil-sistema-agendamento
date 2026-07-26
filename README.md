@@ -60,6 +60,10 @@ Não há nada para instalar. Escolha uma das opções:
 ```
 agendafacil-sistema-agendamento/
 ├── index.html          # Estrutura da página e das duas views (Agendar / Admin)
+├── assets/
+│   └── img/            # Fotos reais: hero.jpg, salon1–5.jpg,
+│       ├── servicos/   #   capas dos serviços
+│       └── equipe/     #   retratos dos profissionais
 ├── css/
 │   └── style.css       # Estilos, tema claro/escuro e responsividade
 ├── js/
@@ -78,8 +82,23 @@ agendafacil-sistema-agendamento/
 - **JavaScript (ES) puro**, sem frameworks nem dependências externas.
 - **localStorage** para persistência dos dados.
 
-Sem CDN, sem bibliotecas, sem imagens externas: ícones são emojis e todo o visual
-é feito com CSS (gradientes, sombras e SVG inline no favicon).
+Sem CDN, sem bibliotecas e sem imagens externas por URL: os ícones da interface são
+**SVG inline** (estilo traço fino), as fotos do salão ficam em `assets/img/` (arquivos
+locais) e o restante do visual é feito com CSS (gradientes, sombras e cantos arredondados).
+
+### Fotos x ícones
+
+Tudo que é **conteúdo** aparece como foto real: capa dos serviços, retrato dos
+profissionais, miniaturas dos resumos/painel e a galeria "Nosso espaço". Continuam
+em **SVG** apenas os controles e indicadores: abas, alternador de tema, busca, setas
+do calendário, botões de voltar, o stepper de 4 passos e os selos dos cartões de
+estatística (são números, não conteúdo visual).
+
+O par foto↔serviço está em `js/data.js` (campos `foto` e `fotoAlt`). **Atenção:** alguns
+arquivos em `assets/img/servicos/` têm nome trocado em relação ao que a imagem mostra
+(por exemplo, `corte.jpg` mostra o aparo de uma barba e `barba.jpg` mostra um corte de
+cabelo). O mapeamento segue o **conteúdo real** de cada foto, não o nome do arquivo —
+os desvios estão comentados no topo de `data.js`.
 
 ---
 
